@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tutor AI — Business Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f2e8;
+    --paper-dim: #efe9db;
+    --rule: #d9d0b8;
+    --ink: #232017;
+    --ink-soft: #5c5644;
+    --gold: #a9762c;
+    --gold-soft: #d9b877;
+    --green: #2f6e4d;
+    --green-bg: #e4efe6;
+    --red: #a13a2f;
+    --red-bg: #f6e6e2;
+    --card-bg: #fffdf8;
+    --blue: #385a8a;
+    --blue-bg: #e7edf5;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    background-image:
+      repeating-linear-gradient(transparent, transparent 38px, var(--rule) 39px);
+    padding: 48px 24px 80px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  /* ===== Header ===== */
+  header {
+    margin-bottom: 36px;
+    padding-bottom: 22px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    margin: 0 0 10px 0;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(28px, 4.4vw, 42px);
+    line-height: 1.08;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 58ch;
+  }
+
+  /* ===== Section shells ===== */
+  section {
+    margin-bottom: 32px;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .section-head-left {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    border: 1px solid var(--gold-soft);
+    border-radius: 3px;
+    padding: 1px 7px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .section-sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 4px 0 0 0;
+  }
+
+  /* ===== Toggle switch ===== */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .switch {
+    position: relative;
+    width: 42px;
+    height: 23px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--rule);
+    border-radius: 20px;
+    transition: 0.2s;
+  }
+  .slider::before {
+    content: "";
+    position: absolute;
+    height: 17px; width: 17px;
+    left: 3px; bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .switch input:checked + .slider { background: var(--gold); }
+  .switch input:checked + .slider::before { transform: translateX(19px); }
+  .switch input:focus-visible + .slider { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* ===== Ledger rows (fixed costs) ===== */
+  .ledger {
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .ledger-row {
+    display: grid;
+    grid-template-columns: 1fr 160px;
+    align-items: center;
+    padding: 13px 18px;
+    border-bottom: 1px dashed var(--rule);
+    gap: 12px;
+  }
+  .ledger-row:last-child { border-bottom: none; }
+  .ledger-row.total {
+    background: var(--paper-dim);
+    border-top: 1.5px solid var(--ink);
+    border-bottom: none;
+  }
+  .row-label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .row-label .sub {
+    display: block;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .total .row-label { font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; }
+
+  .amount-field {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .rupee { color: var(--ink-soft); font-size: 14px; }
+  input[type="number"] {
+    width: 110px;
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--paper-dim);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 7px 9px;
+  }
+  input[type="number"]:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+    background: #fff;
+  }
+  select {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    background: var(--paper-dim);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 6px 8px;
+  }
+  select:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .readout {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  /* ===== Plan cards ===== */
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 760px) {
+    .plans { grid-template-columns: 1fr; }
+  }
+  .plan-card {
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 16px 16px 14px;
+  }
+  .plan-card .plan-name {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 2px 0;
+  }
+  .plan-card .plan-tag {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin: 0 0 14px 0;
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 9px;
+    gap: 8px;
+  }
+  .field-row label {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+  .field-row .amount-field input { width: 88px; font-size: 13.5px; padding: 6px 8px; }
+  .field-row .amount-field.clients input { width: 60px; }
+
+  .plan-result {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--rule);
+  }
+  .plan-result .line {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .plan-result .line.strong {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  .margin-pill {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .margin-pill.good { background: var(--green-bg); color: var(--green); }
+  .margin-pill.warn { background: var(--red-bg); color: var(--red); }
+
+  .infra-btn {
+    margin-top: 10px;
+    width: 100%;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--blue);
+    background: var(--blue-bg);
+    border: 1px solid #c3d2e5;
+    border-radius: 3px;
+    padding: 7px 8px;
+    cursor: pointer;
+  }
+  .infra-btn:hover { background: #dbe5f0; }
+  .infra-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+  /* ===== Internal infra costing panel ===== */
+  .infra-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-top: 14px;
+  }
+  .infra-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 28px;
+  }
+  @media (max-width: 700px) {
+    .infra-grid { grid-template-columns: 1fr; }
+  }
+  .infra-block {
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .infra-block:nth-last-child(-n+2) { border-bottom: none; }
+  @media (max-width: 700px) {
+    .infra-block:nth-last-child(-n+2) { border-bottom: 1px dashed var(--rule); }
+    .infra-block:last-child { border-bottom: none; }
+  }
+  .infra-block h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+  }
+  .infra-block .field-row { margin-bottom: 7px; }
+  .infra-block .field-row:last-child { margin-bottom: 0; }
+  .infra-block .field-row select { width: 150px; }
+  .infra-block .hint {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin: 4px 0 0 0;
+    line-height: 1.4;
+  }
+
+  .infra-total {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1.5px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .infra-total .label { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; }
+  .infra-total .value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 700; color: var(--gold); }
+  .infra-total .per-client { font-size: 12px; color: var(--ink-soft); font-family: 'IBM Plex Mono', monospace; }
+
+  /* ===== Balance beam ===== */
+  .beam-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    padding: 26px 26px 22px;
+  }
+  .beam-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .beam-figure {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(30px, 5vw, 46px);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .beam-figure.profit { color: var(--green); }
+  .beam-figure.loss { color: var(--red); }
+  .beam-figure-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .beam-meta {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .beam-meta strong { color: var(--ink); font-weight: 600; }
+
+  .scale {
+    position: relative;
+    height: 34px;
+    background: var(--paper-dim);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .scale-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 0%;
+    background: var(--green);
+    transition: width 0.35s ease, background 0.35s ease;
+  }
+  .scale-fill.short { background: var(--red); }
+  .scale-marker {
+    position: absolute;
+    top: -4px; bottom: -4px;
+    width: 2px;
+    background: var(--ink);
+    left: 0%;
+  }
+  .scale-marker::after {
+    content: 'break-even';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .scale-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+  }
+
+  /* ===== Recommendations ===== */
+  .recs {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--rule);
+  }
+  .recs h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 10px 0;
+  }
+  .rec-item {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    font-size: 13px;
+    line-height: 1.55;
+    margin-bottom: 9px;
+    color: var(--ink);
+  }
+  .rec-item:last-child { margin-bottom: 0; }
+  .rec-dot {
+    flex-shrink: 0;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-top: 6px;
+  }
+  .rec-dot.good { background: var(--green); }
+  .rec-dot.warn { background: var(--red); }
+  .rec-dot.info { background: var(--blue); }
+  .rec-item strong { color: inherit; }
+
+  footer {
+    margin-top: 40px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Tutor AI · Business Ledger</p>
+    <h1>Pricing &amp; Break-even Calculator</h1>
+    <p>Client pricing, internal infra costing, aur live recommendations — sab ek hi jagah. Number badlo, sab kuch turant recalculate hoga.</p>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Fixed Monthly Costs</h2>
+      </div>
+    </div>
+    <div class="ledger">
+      <div class="ledger-row">
+        <div class="row-label">Developer 1<span class="sub">Monthly salary</span></div>
+        <div class="amount-field"><span class="rupee">₹</span><input type="number" id="dev1" value="15000" min="0" step="500"></div>
+      </div>
+      <div class="ledger-row">
+        <div class="row-label">Developer 2<span class="sub">Monthly salary</span></div>
+        <div class="amount-field"><span class="rupee">₹</span><input type="number" id="dev2" value="20000" min="0" step="500"></div>
+      </div>
+      <div class="ledger-row">
+        <div class="row-label">Base infra (manual)<span class="sub">Domain, misc. — agar Section 02 ka infra calculator use kar rahe ho to yahan 0 rakho</span></div>
+        <div class="amount-field"><span class="rupee">₹</span><input type="number" id="baseInfra" value="1800" min="0" step="100"></div>
+      </div>
+      <div class="ledger-row total">
+        <div class="row-label">Total Fixed Cost</div>
+        <div class="amount-field"><span class="readout" id="totalFixed">₹0</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Internal Infra Costing</h2>
+      </div>
+      <div class="toggle-wrap">
+        <span id="toggleLabel">Off</span>
+        <label class="switch">
+          <input type="checkbox" id="showInfra">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    <p class="section-sub">Server, LLM, embeddings, storage aur vector-DB — apni actual infra cost yahan calculate karo. Neeche har plan card mein "Apply" button se seedha uss tier ke cost field mein daal sakte ho.</p>
+
+    <div class="infra-panel" id="infraPanel" style="display:none;">
+      <div class="infra-grid">
+
+        <div class="infra-block">
+          <h3>Server (EC2 / VPS)</h3>
+          <div class="field-row">
+            <label for="srv_preset">Preset</label>
+            <select id="srv_preset">
+              <option value="2500">Small — t3.medium (~₹2,500)</option>
+              <option value="5000">Medium — t3.large (~₹5,000)</option>
+              <option value="28000">GPU — g4dn.xlarge (~₹28,000)</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="srv_cost">Cost/mo</label>
+            <div class="amount-field"><span class="rupee">₹</span><input type="number" id="srv_cost" value="2500" min="0" step="100"></div>
+          </div>
+        </div>
+
+        <div class="infra-block">
+          <h3>Storage (Cloudflare R2)</h3>
+          <div class="field-row">
+            <label for="stor_gb">GB stored</label>
+            <div class="amount-field"><input type="number" id="stor_gb" value="100" min="0" step="10"></div>
+          </div>
+          <div class="field-row">
+            <label for="stor_rate">Rate ₹/GB</label>
+            <div class="amount-field"><input type="number" id="stor_rate" value="1.4" min="0" step="0.1"></div>
+          </div>
+          <p class="hint" id="storTotalHint">Storage cost: ₹0/mo</p>
+        </div>
+
+        <div class="infra-block">
+          <h3>LLM (Ollama / API)</h3>
+          <div class="field-row">
+            <label for="llm_plan">Plan</label>
+            <select id="llm_plan">
+              <option value="0">Ollama Free (₹0)</option>
+              <option value="1700" selected>Ollama Pro (₹1,700)</option>
+              <option value="8500">Ollama Max (₹8,500)</option>
+              <option value="custom">Pay-per-token API</option>
+            </select>
+          </div>
+          <div id="llmCustomFields" style="display:none;">
+            <div class="field-row">
+              <label for="llm_intok">Input tokens (M/mo)</label>
+              <div class="amount-field"><input type="number" id="llm_intok" value="10" min="0" step="1"></div>
+            </div>
+            <div class="field-row">
+              <label for="llm_outtok">Output tokens (M/mo)</label>
+              <div class="amount-field"><input type="number" id="llm_outtok" value="4" min="0" step="1"></div>
+            </div>
+            <div class="field-row">
+              <label for="llm_inrate">₹/M input</label>
+              <div class="amount-field"><input type="number" id="llm_inrate" value="250" min="0" step="10"></div>
+            </div>
+            <div class="field-row">
+              <label for="llm_outrate">₹/M output</label>
+              <div class="amount-field"><input type="number" id="llm_outrate" value="1250" min="0" step="10"></div>
+            </div>
+          </div>
+          <p class="hint" id="llmTotalHint">LLM cost: ₹1,700/mo</p>
+        </div>
+
+        <div class="infra-block">
+          <h3>Embeddings</h3>
+          <div class="field-row">
+            <label for="emb_source">Source</label>
+            <select id="emb_source">
+              <option value="self">Self-hosted (free)</option>
+              <option value="api" selected>Paid API</option>
+            </select>
+          </div>
+          <div id="embApiFields">
+            <div class="field-row">
+              <label for="emb_tok">Tokens (M/mo)</label>
+              <div class="amount-field"><input type="number" id="emb_tok" value="5" min="0" step="1"></div>
+            </div>
+            <div class="field-row">
+              <label for="emb_rate">₹/M tokens</label>
+              <div class="amount-field"><input type="number" id="emb_rate" value="2" min="0" step="0.5"></div>
+            </div>
+          </div>
+          <p class="hint" id="embTotalHint">Embedding cost: ₹0/mo</p>
+        </div>
+
+        <div class="infra-block">
+          <h3>Vector Database</h3>
+          <div class="field-row">
+            <label for="vdb_type">Type</label>
+            <select id="vdb_type">
+              <option value="pgvector">pgvector (free, existing DB)</option>
+              <option value="qdrant">Qdrant Cloud (paid)</option>
+            </select>
+          </div>
+          <div id="vdbFeeField" style="display:none;">
+            <div class="field-row">
+              <label for="vdb_fee">Cost/mo</label>
+              <div class="amount-field"><span class="rupee">₹</span><input type="number" id="vdb_fee" value="850" min="0" step="50"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="infra-total">
+        <div>
+          <div class="label">Total Internal Infra Cost</div>
+          <div class="per-client" id="infraPerClient">— per active client</div>
+        </div>
+        <div class="value" id="infraTotal">₹0</div>
+      </div>
+
+      <div class="recs" id="infraRecs">
+        <h4>Suggestions</h4>
+        <div id="infraRecList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Plans — Price, Cost &amp; Clients</h2>
+      </div>
+    </div>
+    <div class="plans">
+
+      <div class="plan-card">
+        <p class="plan-name">Starter</p>
+        <p class="plan-tag">1–5 courses, ~200 students</p>
+        <div class="field-row">
+          <label for="s_price">Price/mo</label>
+          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="s_price" value="3000" min="0" step="100"></div>
+        </div>
+        <div class="field-row">
+          <label for="s_cost">Your cost/mo</label>
+          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="s_cost" value="800" min="0" step="50"></div>
+        </div>
+        <div class="field-row">
+          <label for="s_clients">Clients</label>
+          <div class="amount-field clients"><input type="number" id="s_clients" value="8" min="0" step="1"></div>
+        </div>
+        <div class="plan-result">
+          <div class="line"><span>Contribution / client</span><span id="s_contrib">₹0</span></div>
+          <div class="line strong"><span>Tier total</span><span id="s_total">₹0</span></div>
+          <span class="margin-pill" id="s_margin">—</span>
+        </div>
+        <button class="infra-btn" id="s_apply" type="button">↳ Apply infra cost to this tier</button>
+      </div>
+
+      <div class="plan-card">
+        <p class="plan-name">Growth</p>
+        <p class="plan-tag">6–20 courses, ~1,000 students</p>
+        <div class="field-row">
+          <label for="g_price">Price/mo</label>
+          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="g_price" value="8500" min="0" step="100"></div>
+        </div>
+        <div class="field-row">
+          <label for="g_cost">Your cost/mo</label>
+          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="g_cost" value="2500" min="0" step="50"></div>
+        </div>
+        <div class="field-row">
+          <label for="g_clients">Clients</label>
+          <div class="amount-field clients"><input type="number" id="g_clients" value="3" min="0" step="1"></div>
+        </div>
+        <div class="plan-result">
+          <div class="line"><span>Contribution / client</span><span id="g_contrib">₹0</span></div>
+          <div class="line strong"><span>Tier total</span><span id="g_total">₹0</span></div>
+          <span class="margin-pill" id="g_margin">—</span>
+        </div>
+        <button class="infra-btn" id="g_apply" type="button">↳ Apply infra cost to this tier</button>
+      </div>
+
+      <div class="plan-card">
+        <p class="plan-name">Institute</p>
+        <p class="plan-tag">Unlimited, multi-tutor</p>
+        <div class="field-row">
+          <label for="i_price">Price/mo</label>
+          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="i_price" value="22000" min="0" step="500"></div>
+        </div>
+        <div class="field-row">
+          <label for="i_cost">Your cost/mo</label>
+          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="i_cost" value="6500" min="0" step="100"></div>
+        </div>
+        <div class="field-row">
+          <label for="i_clients">Clients</label>
+          <div class="amount-field clients"><input type="number" id="i_clients" value="1" min="0" step="1"></div>
+        </div>
+        <div class="plan-result">
+          <div class="line"><span>Contribution / client</span><span id="i_contrib">₹0</span></div>
+          <div class="line strong"><span>Tier total</span><span id="i_total">₹0</span></div>
+          <span class="margin-pill" id="i_margin">—</span>
+        </div>
+        <button class="infra-btn" id="i_apply" type="button">↳ Apply infra cost to this tier</button>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-num">04</span>
+        <h2 class="section-title">The Ledger Balance</h2>
+      </div>
+    </div>
+    <div class="beam-card">
+      <div class="beam-top">
+        <div>
+          <p class="beam-figure-label" id="resultLabel">Net Result / Month</p>
+          <p class="beam-figure profit" id="netFigure">₹0</p>
+        </div>
+        <div class="beam-meta">
+          Fixed cost <strong id="metaFixed">₹0</strong><br>
+          Total contribution <strong id="metaContrib">₹0</strong>
+        </div>
+      </div>
+
+      <div class="scale">
+        <div class="scale-fill" id="scaleFill"></div>
+        <div class="scale-marker" id="scaleMarker"></div>
+      </div>
+      <div class="scale-ticks">
+        <span>₹0</span>
+        <span id="scaleMax">₹0</span>
+      </div>
+
+      <div class="recs">
+        <h4>Recommendations</h4>
+        <div id="recList"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Sab calculation is page ke andar hi hoti hai — koi data kahin bheja nahi jaata.</footer>
+
+</div>
+
+<script>
+  function fmtINR(num) {
+    const n = Math.round(num);
+    const sign = n < 0 ? '-' : '';
+    const abs = Math.abs(n).toString();
+    let lastThree = abs.substring(abs.length - 3);
+    let other = abs.substring(0, abs.length - 3);
+    if (other !== '') { lastThree = ',' + lastThree; }
+    const formatted = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+    return sign + '₹' + formatted;
+  }
+
+  function val(id) {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const v = parseFloat(el.value);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function recItem(container, type, html) {
+    const div = document.createElement('div');
+    div.className = 'rec-item';
+    div.innerHTML = '<span class="rec-dot ' + type + '"></span><span>' + html + '</span>';
+    container.appendChild(div);
+  }
+
+  // ---- Toggle infra panel ----
+  const showInfraEl = document.getElementById('showInfra');
+  const infraPanel = document.getElementById('infraPanel');
+  const toggleLabel = document.getElementById('toggleLabel');
+  showInfraEl.addEventListener('change', () => {
+    infraPanel.style.display = showInfraEl.checked ? 'block' : 'none';
+    toggleLabel.textContent = showInfraEl.checked ? 'On' : 'Off';
+    recalc();
+  });
+
+  // ---- Server preset ----
+  document.getElementById('srv_preset').addEventListener('change', function () {
+    if (this.value !== 'custom') {
+      document.getElementById('srv_cost').value = this.value;
+      recalc();
+    }
+  });
+
+  // ---- LLM plan ----
+  const llmPlanEl = document.getElementById('llm_plan');
+  const llmCustomFields = document.getElementById('llmCustomFields');
+  llmPlanEl.addEventListener('change', function () {
+    llmCustomFields.style.display = this.value === 'custom' ? 'block' : 'none';
+    recalc();
+  });
+
+  // ---- Embedding source ----
+  const embSourceEl = document.getElementById('emb_source');
+  const embApiFields = document.getElementById('embApiFields');
+  embSourceEl.addEventListener('change', function () {
+    embApiFields.style.display = this.value === 'api' ? 'block' : 'none';
+    recalc();
+  });
+
+  // ---- Vector DB type ----
+  const vdbTypeEl = document.getElementById('vdb_type');
+  const vdbFeeField = document.getElementById('vdbFeeField');
+  vdbTypeEl.addEventListener('change', function () {
+    vdbFeeField.style.display = this.value === 'qdrant' ? 'block' : 'none';
+    recalc();
+  });
+
+  // ---- Apply infra cost to tier ----
+  function applyToTier(prefix) {
+    const total = computeInfraTotal();
+    document.getElementById(prefix + '_cost').value = Math.round(total);
+    recalc();
+  }
+  document.getElementById('s_apply').addEventListener('click', () => applyToTier('s'));
+  document.getElementById('g_apply').addEventListener('click', () => applyToTier('g'));
+  document.getElementById('i_apply').addEventListener('click', () => applyToTier('i'));
+
+  function computeInfraTotal() {
+    const srv = val('srv_cost');
+    const stor = val('stor_gb') * val('stor_rate');
+
+    let llm;
+    if (llmPlanEl.value === 'custom') {
+      llm = (val('llm_intok') * val('llm_inrate')) + (val('llm_outtok') * val('llm_outrate'));
+    } else {
+      llm = parseFloat(llmPlanEl.value) || 0;
+    }
+
+    let emb = 0;
+    if (embSourceEl.value === 'api') {
+      emb = val('emb_tok') * val('emb_rate');
+    }
+
+    let vdb = 0;
+    if (vdbTypeEl.value === 'qdrant') {
+      vdb = val('vdb_fee');
+    }
+
+    document.getElementById('storTotalHint').textContent = 'Storage cost: ' + fmtINR(stor) + '/mo';
+    document.getElementById('llmTotalHint').textContent = 'LLM cost: ' + fmtINR(llm) + '/mo';
+    document.getElementById('embTotalHint').textContent = 'Embedding cost: ' + fmtINR(emb) + '/mo';
+
+    return srv + stor + llm + emb + vdb;
+  }
+
+  function recalc() {
+    // ---- Fixed costs ----
+    const dev1 = val('dev1');
+    const dev2 = val('dev2');
+    const baseInfra = val('baseInfra');
+    const totalFixed = dev1 + dev2 + baseInfra;
+    document.getElementById('totalFixed').textContent = fmtINR(totalFixed);
+
+    // ---- Infra total ----
+    const infraTotal = computeInfraTotal();
+    document.getElementById('infraTotal').textContent = fmtINR(infraTotal);
+
+    // ---- Tiers ----
+    const tierDefs = [
+      { prefix: 's_' },
+      { prefix: 'g_' },
+      { prefix: 'i_' }
+    ];
+
+    let totalContribution = 0;
+    let totalClients = 0;
+
+    tierDefs.forEach(t => {
+      const price = val(t.prefix + 'price');
+      const cost = val(t.prefix + 'cost');
+      const clients = val(t.prefix + 'clients');
+      const contribPer = price - cost;
+      const tierTotal = contribPer * clients;
+      totalContribution += tierTotal;
+      totalClients += clients;
+
+      document.getElementById(t.prefix + 'contrib').textContent = fmtINR(contribPer);
+      document.getElementById(t.prefix + 'total').textContent = fmtINR(tierTotal);
+
+      const marginPct = price > 0 ? (contribPer / price) * 100 : 0;
+      const pill = document.getElementById(t.prefix + 'margin');
+      pill.textContent = 'Margin ' + marginPct.toFixed(0) + '%';
+      pill.className = 'margin-pill ' + (marginPct >= 50 ? 'good' : 'warn');
+    });
+
+    document.getElementById('infraPerClient').textContent =
+      totalClients > 0 ? fmtINR(infraTotal / totalClients) + ' per active client' : '— per active client';
+
+    // ---- Infra suggestions ----
+    const infraRecList = document.getElementById('infraRecList');
+    infraRecList.innerHTML = '';
+    if (showInfraEl.checked) {
+      const srv = val('srv_cost');
+      const perClientInfra = totalClients > 0 ? infraTotal / totalClients : null;
+
+      if (llmPlanEl.value === 'custom') {
+        const payPerUse = (val('llm_intok') * val('llm_inrate')) + (val('llm_outtok') * val('llm_outrate'));
+        if (payPerUse > 8500) {
+          recItem(infraRecList, 'warn', '<strong>Ollama Max (₹8,500)</strong> pay-per-token se sasta padega — abhi aap ~' + fmtINR(payPerUse) + '/mo pay-per-use mein de rahe ho.');
+        } else if (payPerUse < 1700 && payPerUse > 0) {
+          recItem(infraRecList, 'good', 'Usage kam hai — <strong>Ollama Free/Pro</strong> pay-per-token se sasta pad sakta hai.');
+        }
+      }
+
+      if (vdbTypeEl.value === 'qdrant' && totalClients < 8) {
+        recItem(infraRecList, 'warn', 'Sirf ' + totalClients + ' clients hain — <strong>pgvector (free)</strong> abhi ke liye kaafi hoga, Qdrant Cloud ka paisa bacha sakte ho.');
+      }
+
+      if (srv >= 28000 && totalClients < 15) {
+        recItem(infraRecList, 'warn', 'GPU server (₹28,000+) abhi ke client-count ke hisaab se overkill lag raha hai — chhota instance try karo jab tak load na badhe.');
+      }
+
+      if (perClientInfra !== null) {
+        const growthCost = val('g_cost');
+        if (perClientInfra > growthCost * 1.15) {
+          recItem(infraRecList, 'warn', 'Infra cost per client (' + fmtINR(perClientInfra) + ') Growth tier ke manually-entered cost (' + fmtINR(growthCost) + ') se zyada hai — tier ka "Your cost" field update karo ya "Apply" button use karo.');
+        } else {
+          recItem(infraRecList, 'good', 'Infra cost per client (' + fmtINR(perClientInfra) + ') Growth tier ke cost-field se roughly match kar raha hai.');
+        }
+      }
+
+      if (infraRecList.children.length === 0) {
+        recItem(infraRecList, 'info', 'Infra setup theek dikh raha hai — koi turant change ki zaroorat nahi.');
+      }
+    }
+
+    // ---- Balance ----
+    const net = totalContribution - totalFixed;
+    const netFigureEl = document.getElementById('netFigure');
+    const resultLabelEl = document.getElementById('resultLabel');
+    netFigureEl.textContent = fmtINR(net);
+    netFigureEl.classList.toggle('profit', net >= 0);
+    netFigureEl.classList.toggle('loss', net < 0);
+    resultLabelEl.textContent = net >= 0 ? 'Net Profit / Month' : 'Net Shortfall / Month';
+
+    document.getElementById('metaFixed').textContent = fmtINR(totalFixed);
+    document.getElementById('metaContrib').textContent = fmtINR(totalContribution);
+
+    const maxVal = Math.max(totalFixed, totalContribution, 1) * 1.15;
+    const fillPct = Math.min((totalContribution / maxVal) * 100, 100);
+    const markerPct = Math.min((totalFixed / maxVal) * 100, 100);
+
+    const fillEl = document.getElementById('scaleFill');
+    fillEl.style.width = fillPct + '%';
+    fillEl.classList.toggle('short', totalContribution < totalFixed);
+
+    document.getElementById('scaleMarker').style.left = markerPct + '%';
+    document.getElementById('scaleMax').textContent = fmtINR(maxVal);
+
+    // ---- Recommendations (overall) ----
+    const recList = document.getElementById('recList');
+    recList.innerHTML = '';
+
+    if (totalContribution >= totalFixed) {
+      const surplus = totalContribution - totalFixed;
+      const bufferPct = totalFixed > 0 ? (surplus / totalFixed) * 100 : 0;
+      recItem(recList, 'good', 'Fixed cost cover ho raha hai — <strong>' + fmtINR(surplus) + '</strong> extra bach raha hai har mahine.');
+      if (bufferPct < 20) {
+        recItem(recList, 'warn', 'Buffer sirf ' + bufferPct.toFixed(0) + '% hai — ek client chhod (churn) de to profit khatam ho sakta hai. 20-30% buffer target karo.');
+      } else {
+        recItem(recList, 'good', 'Buffer ' + bufferPct.toFixed(0) + '% hai — 1-2 client chhod bhi den to bhi aap safe ho.');
+      }
+    } else {
+      const gap = totalFixed - totalContribution;
+      const gPrice = val('g_price'), gCost = val('g_cost');
+      const gContrib = gPrice - gCost;
+      const moreGrowth = gContrib > 0 ? Math.ceil(gap / gContrib) : null;
+      let msg = 'Abhi <strong>' + fmtINR(gap) + '</strong> ka shortfall hai — fixed cost total contribution se zyada hai.';
+      if (moreGrowth) {
+        msg += ' Cover karne ke liye lagbhag <strong>' + moreGrowth + ' aur Growth-tier client</strong> chahiye.';
+      }
+      recItem(recList, 'warn', msg);
+    }
+
+    // Which tier has best contribution-per-client — suggest focus
+    const tierContribs = [
+      { name: 'Starter', c: val('s_price') - val('s_cost') },
+      { name: 'Growth', c: val('g_price') - val('g_cost') },
+      { name: 'Institute', c: val('i_price') - val('i_cost') }
+    ];
+    tierContribs.sort((a, b) => b.c - a.c);
+    recItem(recList, 'info', '<strong>' + tierContribs[0].name + '</strong> tier har client se sabse zyada kamata hai (' + fmtINR(tierContribs[0].c) + '/client) — naye clients laate waqt isi tier pe focus karo.');
+
+    // Low-margin tier warning
+    tierContribs.forEach(t => {
+      const priceMap = { Starter: 's_price', Growth: 'g_price', Institute: 'i_price' };
+      const price = val(priceMap[t.name]);
+      const marginPct = price > 0 ? (t.c / price) * 100 : 0;
+      if (marginPct < 40 && price > 0) {
+        recItem(recList, 'warn', t.name + ' tier ka margin sirf ' + marginPct.toFixed(0) + '% hai — price badhane ya cost kam karne pe sochho.');
+      }
+    });
+  }
+
+  document.querySelectorAll('input[type="number"], select').forEach(el => {
+    el.addEventListener('input', recalc);
+    el.addEventListener('change', recalc);
+  });
+
+  recalc();
+</script>
+
+</body>
+</html>
