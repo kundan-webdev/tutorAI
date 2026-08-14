@@ -3,1058 +3,432 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tutor AI — Business Ledger</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>SaaS Unit Economics Dashboard v2</title>
 <style>
-  :root {
-    --paper: #f6f2e8;
-    --paper-dim: #efe9db;
-    --rule: #d9d0b8;
-    --ink: #232017;
-    --ink-soft: #5c5644;
-    --gold: #a9762c;
-    --gold-soft: #d9b877;
-    --green: #2f6e4d;
-    --green-bg: #e4efe6;
-    --red: #a13a2f;
-    --red-bg: #f6e6e2;
-    --card-bg: #fffdf8;
-    --blue: #385a8a;
-    --blue-bg: #e7edf5;
-  }
-
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-  }
-
-  body {
-    background-image:
-      repeating-linear-gradient(transparent, transparent 38px, var(--rule) 39px);
-    padding: 48px 24px 80px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
-  }
-
-  .wrap {
-    max-width: 980px;
-    margin: 0 auto;
-  }
-
-  /* ===== Header ===== */
-  header {
-    margin-bottom: 36px;
-    padding-bottom: 22px;
-    border-bottom: 2px solid var(--ink);
-  }
-  .eyebrow {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--gold);
-    font-weight: 600;
-    margin: 0 0 10px 0;
-  }
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-size: clamp(28px, 4.4vw, 42px);
-    line-height: 1.08;
-    margin: 0 0 8px 0;
-    letter-spacing: -0.01em;
-  }
-  header p {
-    font-size: 14.5px;
-    color: var(--ink-soft);
-    margin: 0;
-    max-width: 58ch;
-  }
-
-  /* ===== Section shells ===== */
-  section {
-    margin-bottom: 32px;
-  }
-  .section-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-  .section-head-left {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-  .section-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--gold);
-    border: 1px solid var(--gold-soft);
-    border-radius: 3px;
-    padding: 1px 7px;
-  }
-  .section-title {
-    font-family: 'Fraunces', serif;
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0;
-  }
-  .section-sub {
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    margin: 4px 0 0 0;
-  }
-
-  /* ===== Toggle switch ===== */
-  .toggle-wrap {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--ink-soft);
-  }
-  .switch {
-    position: relative;
-    width: 42px;
-    height: 23px;
-    flex-shrink: 0;
-  }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--rule);
-    border-radius: 20px;
-    transition: 0.2s;
-  }
-  .slider::before {
-    content: "";
-    position: absolute;
-    height: 17px; width: 17px;
-    left: 3px; bottom: 3px;
-    background: #fff;
-    border-radius: 50%;
-    transition: 0.2s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  }
-  .switch input:checked + .slider { background: var(--gold); }
-  .switch input:checked + .slider::before { transform: translateX(19px); }
-  .switch input:focus-visible + .slider { outline: 2px solid var(--gold); outline-offset: 2px; }
-
-  /* ===== Ledger rows (fixed costs) ===== */
-  .ledger {
-    background: var(--card-bg);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .ledger-row {
-    display: grid;
-    grid-template-columns: 1fr 160px;
-    align-items: center;
-    padding: 13px 18px;
-    border-bottom: 1px dashed var(--rule);
-    gap: 12px;
-  }
-  .ledger-row:last-child { border-bottom: none; }
-  .ledger-row.total {
-    background: var(--paper-dim);
-    border-top: 1.5px solid var(--ink);
-    border-bottom: none;
-  }
-  .row-label {
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .row-label .sub {
-    display: block;
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    font-weight: 400;
-    margin-top: 2px;
-  }
-  .total .row-label { font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; }
-
-  .amount-field {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-  }
-  .rupee { color: var(--ink-soft); font-size: 14px; }
-  input[type="number"] {
-    width: 110px;
-    text-align: right;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--ink);
-    background: var(--paper-dim);
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    padding: 7px 9px;
-  }
-  input[type="number"]:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 1px;
-    background: #fff;
-  }
-  select {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12.5px;
-    color: var(--ink);
-    background: var(--paper-dim);
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    padding: 6px 8px;
-  }
-  select:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
-  .readout {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 17px;
-    font-weight: 600;
-  }
-
-  /* ===== Plan cards ===== */
-  .plans {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-  }
-  @media (max-width: 760px) {
-    .plans { grid-template-columns: 1fr; }
-  }
-  .plan-card {
-    background: var(--card-bg);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: 16px 16px 14px;
-  }
-  .plan-card .plan-name {
-    font-family: 'Fraunces', serif;
-    font-size: 17px;
-    font-weight: 600;
-    margin: 0 0 2px 0;
-  }
-  .plan-card .plan-tag {
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    margin: 0 0 14px 0;
-  }
-  .field-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 9px;
-    gap: 8px;
-  }
-  .field-row label {
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    flex-shrink: 0;
-  }
-  .field-row .amount-field input { width: 88px; font-size: 13.5px; padding: 6px 8px; }
-  .field-row .amount-field.clients input { width: 60px; }
-
-  .plan-result {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px dashed var(--rule);
-  }
-  .plan-result .line {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    margin-bottom: 4px;
-  }
-  .plan-result .line.strong {
-    color: var(--ink);
-    font-weight: 600;
-    font-size: 14px;
-    margin-top: 6px;
-  }
-  .margin-pill {
-    display: inline-block;
-    margin-top: 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
-  }
-  .margin-pill.good { background: var(--green-bg); color: var(--green); }
-  .margin-pill.warn { background: var(--red-bg); color: var(--red); }
-
-  .infra-btn {
-    margin-top: 10px;
-    width: 100%;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.02em;
-    color: var(--blue);
-    background: var(--blue-bg);
-    border: 1px solid #c3d2e5;
-    border-radius: 3px;
-    padding: 7px 8px;
-    cursor: pointer;
-  }
-  .infra-btn:hover { background: #dbe5f0; }
-  .infra-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
-
-  /* ===== Internal infra costing panel ===== */
-  .infra-panel {
-    background: var(--card-bg);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: 18px 20px;
-    margin-top: 14px;
-  }
-  .infra-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px 28px;
-  }
-  @media (max-width: 700px) {
-    .infra-grid { grid-template-columns: 1fr; }
-  }
-  .infra-block {
-    padding-bottom: 14px;
-    border-bottom: 1px dashed var(--rule);
-  }
-  .infra-block:nth-last-child(-n+2) { border-bottom: none; }
-  @media (max-width: 700px) {
-    .infra-block:nth-last-child(-n+2) { border-bottom: 1px dashed var(--rule); }
-    .infra-block:last-child { border-bottom: none; }
-  }
-  .infra-block h3 {
-    font-family: 'Fraunces', serif;
-    font-size: 14.5px;
-    font-weight: 600;
-    margin: 0 0 10px 0;
-  }
-  .infra-block .field-row { margin-bottom: 7px; }
-  .infra-block .field-row:last-child { margin-bottom: 0; }
-  .infra-block .field-row select { width: 150px; }
-  .infra-block .hint {
-    font-size: 11px;
-    color: var(--ink-soft);
-    margin: 4px 0 0 0;
-    line-height: 1.4;
-  }
-
-  .infra-total {
-    margin-top: 18px;
-    padding-top: 16px;
-    border-top: 1.5px solid var(--ink);
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .infra-total .label { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; }
-  .infra-total .value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 700; color: var(--gold); }
-  .infra-total .per-client { font-size: 12px; color: var(--ink-soft); font-family: 'IBM Plex Mono', monospace; }
-
-  /* ===== Balance beam ===== */
-  .beam-card {
-    background: var(--card-bg);
-    border: 1.5px solid var(--ink);
-    border-radius: 4px;
-    padding: 26px 26px 22px;
-  }
-  .beam-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .beam-figure {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(30px, 5vw, 46px);
-    font-weight: 700;
-    line-height: 1;
-  }
-  .beam-figure.profit { color: var(--green); }
-  .beam-figure.loss { color: var(--red); }
-  .beam-figure-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin-bottom: 4px;
-  }
-  .beam-meta {
-    text-align: right;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-  }
-  .beam-meta strong { color: var(--ink); font-weight: 600; }
-
-  .scale {
-    position: relative;
-    height: 34px;
-    background: var(--paper-dim);
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
-  .scale-fill {
-    position: absolute;
-    top: 0; left: 0; bottom: 0;
-    width: 0%;
-    background: var(--green);
-    transition: width 0.35s ease, background 0.35s ease;
-  }
-  .scale-fill.short { background: var(--red); }
-  .scale-marker {
-    position: absolute;
-    top: -4px; bottom: -4px;
-    width: 2px;
-    background: var(--ink);
-    left: 0%;
-  }
-  .scale-marker::after {
-    content: 'break-even';
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9.5px;
-    letter-spacing: 0.05em;
-    color: var(--ink-soft);
-    white-space: nowrap;
-  }
-  .scale-ticks {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10.5px;
-    color: var(--ink-soft);
-  }
-
-  /* ===== Recommendations ===== */
-  .recs {
-    margin-top: 18px;
-    padding-top: 16px;
-    border-top: 1px dashed var(--rule);
-  }
-  .recs h4 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin: 0 0 10px 0;
-  }
-  .rec-item {
-    display: flex;
-    gap: 9px;
-    align-items: flex-start;
-    font-size: 13px;
-    line-height: 1.55;
-    margin-bottom: 9px;
-    color: var(--ink);
-  }
-  .rec-item:last-child { margin-bottom: 0; }
-  .rec-dot {
-    flex-shrink: 0;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    margin-top: 6px;
-  }
-  .rec-dot.good { background: var(--green); }
-  .rec-dot.warn { background: var(--red); }
-  .rec-dot.info { background: var(--blue); }
-  .rec-item strong { color: inherit; }
-
-  footer {
-    margin-top: 40px;
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    font-style: italic;
-    text-align: center;
-  }
+:root{--bg:#07111c;--panel:#0c1926;--panel2:#101f2f;--border:#1d3145;--text:#edf4fa;--muted:#8fa3b7;--green:#25c490;--orange:#ffb454;--red:#ff6b6b;--blue:#5da9ff;--purple:#a78bfa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;line-height:1.45}.app{max-width:1650px;margin:auto;padding:26px}header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:24px}.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);font-weight:800}h1{font-size:clamp(28px,4vw,48px);line-height:1.05;letter-spacing:-.045em;margin:7px 0}.sub{color:var(--muted);max-width:900px}.actions{display:flex;gap:8px;flex-wrap:wrap}button{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:9px;cursor:pointer}button:hover{border-color:var(--green)}.primary{background:var(--green);border-color:var(--green);color:#03130d;font-weight:800}.grid{display:grid;gap:14px}.g6{grid-template-columns:repeat(6,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}section{margin-bottom:16px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:18px}.kpi{min-height:122px}.label{font-size:11px;color:var(--muted);margin-bottom:11px}.value{font-size:25px;font-weight:850;letter-spacing:-.035em}.hint{font-size:10px;color:var(--muted);margin-top:7px}.green{color:var(--green)}.orange{color:var(--orange)}.red{color:var(--red)}.blue{color:var(--blue)}.purple{color:var(--purple)}.section-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:13px}.section-head h2{font-size:18px;margin:0 0 3px}.section-head p{font-size:11px;color:var(--muted);margin:0}.tag{font-size:10px;padding:4px 8px;border-radius:999px;background:var(--panel2);color:var(--muted);border:1px solid var(--border)}.fields{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:11px}.field label{display:block;color:var(--muted);font-size:10px;margin-bottom:6px}.field input,.field select{width:100%;background:#07131f;border:1px solid var(--border);border-radius:7px;color:var(--text);padding:8px;outline:none}.field input:focus,.field select:focus{border-color:var(--green)}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--border);font-size:12px;text-align:left}th{color:var(--muted);font-size:10px;text-transform:uppercase}td:last-child,th:last-child{text-align:right}.total td{font-weight:800}.box{background:var(--panel2);border:1px solid var(--border);border-radius:11px;overflow:hidden}.box-title{padding:11px 13px;font-size:12px;font-weight:800}.row{display:flex;justify-content:space-between;gap:15px;padding:8px 13px;border-top:1px solid var(--border);font-size:11px}.row span{color:var(--muted)}.formula{margin-top:12px;background:#06101a;border:1px dashed var(--border);border-radius:9px;padding:12px;font:11px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);white-space:pre-wrap}.plan{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:15px}.plan-head{display:flex;justify-content:space-between;align-items:flex-start}.plan-price{font-size:23px;font-weight:850}.list{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:7px}.list li{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}.list strong{color:var(--text)}.bar{height:7px;background:#1b2b3b;border-radius:99px;overflow:hidden;margin-top:10px}.fill{height:100%;background:var(--green);width:0}.status{display:inline-block;padding:5px 9px;border-radius:99px;font-size:10px;font-weight:800}.good{color:var(--green);background:rgba(37,196,144,.1)}.warn{color:var(--orange);background:rgba(255,180,84,.1)}.bad{color:var(--red);background:rgba(255,107,107,.1)}.chart{height:270px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--border);padding:10px 4px 0}.barcol{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}.barvalue{font-size:8px;color:var(--muted);white-space:nowrap}.barshape{width:70%;max-width:54px;border-radius:6px 6px 0 0;background:var(--green);min-height:3px}.barshape.loss{background:var(--red)}.barlabel{font-size:9px;color:var(--muted)}.small{font-size:10px;color:var(--muted)}.decision{font-size:29px;font-weight:850}.footer{color:var(--muted);font-size:10px;text-align:center;padding:18px}.section-num{color:var(--green);font-weight:800;margin-right:5px}@media(max-width:1200px){.g6{grid-template-columns:repeat(3,1fr)}.g4,.fields{grid-template-columns:repeat(3,1fr)}}@media(max-width:800px){header{flex-direction:column}.g6,.g4,.g3,.g2,.fields{grid-template-columns:1fr 1fr}}@media(max-width:520px){.g6,.g4,.g3,.g2,.fields{grid-template-columns:1fr}.app{padding:14px}}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app">
+<header>
+<div>
+<div class="eyebrow">Production Financial Model · v2</div>
+<h1>SaaS Unit Economics Dashboard</h1>
+<p class="sub">21-point operating model for tutor SaaS: revenue, fixed/variable/semi-variable costs, AI, video, infrastructure, tax, payment fees, churn, refunds, CAC, unit economics, break-even, scenarios and scale.</p>
+</div>
+<div class="actions"><button onclick="resetModel()">Reset</button><button class="primary" onclick="window.print()">Print / PDF</button></div>
+</header>
 
-  <header>
-    <p class="eyebrow">Tutor AI · Business Ledger</p>
-    <h1>Pricing &amp; Break-even Calculator</h1>
-    <p>Client pricing, internal infra costing, aur live recommendations — sab ek hi jagah. Number badlo, sab kuch turant recalculate hoga.</p>
-  </header>
+<!-- 01-06 EXECUTIVE -->
+<section class="grid g6">
+<div class="panel kpi"><div class="label">01 · Gross MRR</div><div class="value green" id="grossMRR">₹0</div><div class="hint">Before gateway / GST</div></div>
+<div class="panel kpi"><div class="label">02 · Net Revenue</div><div class="value blue" id="netRevenue">₹0</div><div class="hint">After gateway + output GST</div></div>
+<div class="panel kpi"><div class="label">03 · Fixed Opex</div><div class="value" id="fixedOpex">₹0</div><div class="hint">Team + base operations</div></div>
+<div class="panel kpi"><div class="label">04 · Variable Cost</div><div class="value orange" id="variableCost">₹0</div><div class="hint">Usage + transaction linked</div></div>
+<div class="panel kpi"><div class="label">05 · Total Running Cost</div><div class="value red" id="totalOpex">₹0</div><div class="hint">Fixed + variable</div></div>
+<div class="panel kpi"><div class="label">06 · Operating Profit</div><div class="value" id="opProfit">₹0</div><div class="hint" id="opMargin">0% margin</div></div>
+</section>
 
-  <section>
-    <div class="section-head">
-      <div class="section-head-left">
-        <span class="section-num">01</span>
-        <h2 class="section-title">Fixed Monthly Costs</h2>
-      </div>
-    </div>
-    <div class="ledger">
-      <div class="ledger-row">
-        <div class="row-label">Developer 1<span class="sub">Monthly salary</span></div>
-        <div class="amount-field"><span class="rupee">₹</span><input type="number" id="dev1" value="15000" min="0" step="500"></div>
-      </div>
-      <div class="ledger-row">
-        <div class="row-label">Developer 2<span class="sub">Monthly salary</span></div>
-        <div class="amount-field"><span class="rupee">₹</span><input type="number" id="dev2" value="20000" min="0" step="500"></div>
-      </div>
-      <div class="ledger-row">
-        <div class="row-label">Base infra (manual)<span class="sub">Domain, misc. — agar Section 02 ka infra calculator use kar rahe ho to yahan 0 rakho</span></div>
-        <div class="amount-field"><span class="rupee">₹</span><input type="number" id="baseInfra" value="1800" min="0" step="100"></div>
-      </div>
-      <div class="ledger-row total">
-        <div class="row-label">Total Fixed Cost</div>
-        <div class="amount-field"><span class="readout" id="totalFixed">₹0</span></div>
-      </div>
-    </div>
-  </section>
+<!-- 07 BUSINESS -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">07</span>Business & Customer Inputs</h2><p>Customer mix, pricing, usage and retention.</p></div><span class="tag">Core assumptions</span></div>
+<div class="fields">
+<div class="field"><label>Starter tutors</label><input id="starterTutors" type="number" value="8"></div>
+<div class="field"><label>Growth tutors</label><input id="growthTutors" type="number" value="3"></div>
+<div class="field"><label>Institute clients</label><input id="instituteClients" type="number" value="1"></div>
+<div class="field"><label>Students / tutor</label><input id="studentsPerTutor" type="number" value="50"></div>
+<div class="field"><label>Starter price ₹</label><input id="starterPrice" type="number" value="3000"></div>
+<div class="field"><label>Growth price ₹</label><input id="growthPrice" type="number" value="8500"></div>
+<div class="field"><label>Institute price ₹</label><input id="institutePrice" type="number" value="22000"></div>
+<div class="field"><label>Monthly churn %</label><input id="churn" type="number" value="5" step=".1"></div>
+<div class="field"><label>New tutors / month</label><input id="newTutors" type="number" value="2"></div>
+<div class="field"><label>Refund %</label><input id="refundRate" type="number" value="1" step=".1"></div>
+<div class="field"><label>Failed payment %</label><input id="failedRate" type="number" value="1" step=".1"></div>
+<div class="field"><label>Annual plan discount %</label><input id="annualDiscount" type="number" value="10"></div>
+</div>
+</section>
 
-  <section>
-    <div class="section-head">
-      <div class="section-head-left">
-        <span class="section-num">02</span>
-        <h2 class="section-title">Internal Infra Costing</h2>
-      </div>
-      <div class="toggle-wrap">
-        <span id="toggleLabel">Off</span>
-        <label class="switch">
-          <input type="checkbox" id="showInfra">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-    <p class="section-sub">Server, LLM, embeddings, storage aur vector-DB — apni actual infra cost yahan calculate karo. Neeche har plan card mein "Apply" button se seedha uss tier ke cost field mein daal sakte ho.</p>
+<!-- 08 TEAM -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">08</span>Fixed Team Cost</h2><p>Cash salary and economic founder cost are separated.</p></div></div>
+<div class="fields">
+<div class="field"><label>Developer 1 ₹ / month</label><input id="dev1" type="number" value="15000"></div>
+<div class="field"><label>Developer 2 ₹ / month</label><input id="dev2" type="number" value="20000"></div>
+<div class="field"><label>Founder opportunity cost ₹</label><input id="founderCost" type="number" value="0"></div>
+<div class="field"><label>Other team ₹</label><input id="otherTeam" type="number" value="0"></div>
+</div>
+</section>
 
-    <div class="infra-panel" id="infraPanel" style="display:none;">
-      <div class="infra-grid">
+<!-- 09 INFRA -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">09</span>Base Infrastructure</h2><p>Costs incurred even at low customer volume.</p></div></div>
+<div class="fields">
+<div class="field"><label>Backend / EC2 ₹</label><input id="server" type="number" value="1500"></div>
+<div class="field"><label>PostgreSQL + pgvector ₹</label><input id="postgres" type="number" value="1000"></div>
+<div class="field"><label>Redis / cache ₹</label><input id="redis" type="number" value="300"></div>
+<div class="field"><label>Domain monthly equivalent ₹</label><input id="domain" type="number" value="150"></div>
+<div class="field"><label>Monitoring / logs ₹</label><input id="monitoring" type="number" value="300"></div>
+<div class="field"><label>Backup base ₹</label><input id="backupBase" type="number" value="700"></div>
+<div class="field"><label>Security base ₹</label><input id="securityBase" type="number" value="500"></div>
+<div class="field"><label>Other software / tools ₹</label><input id="software" type="number" value="500"></div>
+</div>
+</section>
 
-        <div class="infra-block">
-          <h3>Server (EC2 / VPS)</h3>
-          <div class="field-row">
-            <label for="srv_preset">Preset</label>
-            <select id="srv_preset">
-              <option value="2500">Small — t3.medium (~₹2,500)</option>
-              <option value="5000">Medium — t3.large (~₹5,000)</option>
-              <option value="28000">GPU — g4dn.xlarge (~₹28,000)</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
-          <div class="field-row">
-            <label for="srv_cost">Cost/mo</label>
-            <div class="amount-field"><span class="rupee">₹</span><input type="number" id="srv_cost" value="2500" min="0" step="100"></div>
-          </div>
-        </div>
+<!-- 10 VIDEO -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">10</span>Video Storage, Processing & Delivery</h2><p>Object storage is separated from bandwidth and processing.</p></div></div>
+<div class="fields">
+<div class="field"><label>Lectures / tutor</label><input id="lectures" type="number" value="100"></div>
+<div class="field"><label>Average video size GB</label><input id="videoSize" type="number" value=".5" step=".1"></div>
+<div class="field"><label>Storage ₹ / GB-month</label><input id="storageRate" type="number" value="1.28" step=".01"></div>
+<div class="field"><label>Video views / student</label><input id="videoViews" type="number" value="10"></div>
+<div class="field"><label>Average watch %</label><input id="watchPct" type="number" value="60"></div>
+<div class="field"><label>Processing ₹ / GB</label><input id="processingRate" type="number" value=".50" step=".01"></div>
+<div class="field"><label>Delivery ₹ / GB</label><input id="deliveryRate" type="number" value="0" step=".01"></div>
+<div class="field"><label>Upload / new content GB / tutor</label><input id="newContentGB" type="number" value="50"></div>
+</div>
+<div class="grid g3" style="margin-top:12px">
+<div class="box"><div class="box-title">Storage</div><div class="row"><span>Total storage</span><strong id="totalStorage">0 GB</strong></div><div class="row"><span>Storage cost</span><strong id="storageCost">₹0</strong></div></div>
+<div class="box"><div class="box-title">Bandwidth</div><div class="row"><span>Monthly views</span><strong id="monthlyViews">0</strong></div><div class="row"><span>Estimated bandwidth</span><strong id="bandwidth">0 GB</strong></div><div class="row"><span>Delivery cost</span><strong id="deliveryCost">₹0</strong></div></div>
+<div class="box"><div class="box-title">Processing</div><div class="row"><span>New content</span><strong id="newContentTotal">0 GB</strong></div><div class="row"><span>Processing cost</span><strong id="processingCost">₹0</strong></div></div>
+</div>
+</section>
 
-        <div class="infra-block">
-          <h3>Storage (Cloudflare R2)</h3>
-          <div class="field-row">
-            <label for="stor_gb">GB stored</label>
-            <div class="amount-field"><input type="number" id="stor_gb" value="100" min="0" step="10"></div>
-          </div>
-          <div class="field-row">
-            <label for="stor_rate">Rate ₹/GB</label>
-            <div class="amount-field"><input type="number" id="stor_rate" value="1.4" min="0" step="0.1"></div>
-          </div>
-          <p class="hint" id="storTotalHint">Storage cost: ₹0/mo</p>
-        </div>
+<!-- 11 AI -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">11</span>AI / LLM / Whisper / Embeddings</h2><p>AI usage is explicitly metered to prevent margin leakage.</p></div></div>
+<div class="fields">
+<div class="field"><label>AI questions / student</label><input id="aiQuestions" type="number" value="40"></div>
+<div class="field"><label>LLM ₹ / 1,000 questions</label><input id="llmRate" type="number" value="100"></div>
+<div class="field"><label>Whisper ₹ / tutor</label><input id="whisperRate" type="number" value="50"></div>
+<div class="field"><label>Embeddings ₹ / tutor</label><input id="embeddingRate" type="number" value="25"></div>
+<div class="field"><label>AI compute ₹ / month</label><input id="aiCompute" type="number" value="1000"></div>
+<div class="field"><label>AI usage limit / student</label><input id="aiLimit" type="number" value="500"></div>
+<div class="field"><label>Average tokens / question</label><input id="tokensPerQ" type="number" value="1800"></div>
+<div class="field"><label>Self-hosted compute allocation ₹</label><input id="selfHostedAI" type="number" value="0"></div>
+</div>
+<div class="box" style="margin-top:12px"><div class="box-title">AI Cost Tree</div><div class="row"><span>Total students</span><strong id="totalStudents">0</strong></div><div class="row"><span>Total AI questions</span><strong id="totalQuestions">0</strong></div><div class="row"><span>LLM</span><strong id="llmCost">₹0</strong></div><div class="row"><span>Whisper</span><strong id="whisperCost">₹0</strong></div><div class="row"><span>Embeddings</span><strong id="embeddingCost">₹0</strong></div><div class="row"><span>AI compute</span><strong id="aiComputeCost">₹0</strong></div><div class="row"><span>AI total</span><strong class="green" id="aiTotal">₹0</strong></div></div>
+</section>
 
-        <div class="infra-block">
-          <h3>LLM (Ollama / API)</h3>
-          <div class="field-row">
-            <label for="llm_plan">Plan</label>
-            <select id="llm_plan">
-              <option value="0">Ollama Free (₹0)</option>
-              <option value="1700" selected>Ollama Pro (₹1,700)</option>
-              <option value="8500">Ollama Max (₹8,500)</option>
-              <option value="custom">Pay-per-token API</option>
-            </select>
-          </div>
-          <div id="llmCustomFields" style="display:none;">
-            <div class="field-row">
-              <label for="llm_intok">Input tokens (M/mo)</label>
-              <div class="amount-field"><input type="number" id="llm_intok" value="10" min="0" step="1"></div>
-            </div>
-            <div class="field-row">
-              <label for="llm_outtok">Output tokens (M/mo)</label>
-              <div class="amount-field"><input type="number" id="llm_outtok" value="4" min="0" step="1"></div>
-            </div>
-            <div class="field-row">
-              <label for="llm_inrate">₹/M input</label>
-              <div class="amount-field"><input type="number" id="llm_inrate" value="250" min="0" step="10"></div>
-            </div>
-            <div class="field-row">
-              <label for="llm_outrate">₹/M output</label>
-              <div class="amount-field"><input type="number" id="llm_outrate" value="1250" min="0" step="10"></div>
-            </div>
-          </div>
-          <p class="hint" id="llmTotalHint">LLM cost: ₹1,700/mo</p>
-        </div>
+<!-- 12 DB -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">12</span>Database / pgvector Economics</h2><p>Database base cost plus usage allocation.</p></div></div>
+<div class="fields">
+<div class="field"><label>DB base ₹</label><input id="dbBase" type="number" value="1000"></div>
+<div class="field"><label>DB usage / tutor ₹</label><input id="dbPerTutor" type="number" value="50"></div>
+<div class="field"><label>Vector storage / tutor ₹</label><input id="vectorPerTutor" type="number" value="25"></div>
+<div class="field"><label>DB growth buffer %</label><input id="dbBuffer" type="number" value="10"></div>
+</div>
+</section>
 
-        <div class="infra-block">
-          <h3>Embeddings</h3>
-          <div class="field-row">
-            <label for="emb_source">Source</label>
-            <select id="emb_source">
-              <option value="self">Self-hosted (free)</option>
-              <option value="api" selected>Paid API</option>
-            </select>
-          </div>
-          <div id="embApiFields">
-            <div class="field-row">
-              <label for="emb_tok">Tokens (M/mo)</label>
-              <div class="amount-field"><input type="number" id="emb_tok" value="5" min="0" step="1"></div>
-            </div>
-            <div class="field-row">
-              <label for="emb_rate">₹/M tokens</label>
-              <div class="amount-field"><input type="number" id="emb_rate" value="2" min="0" step="0.5"></div>
-            </div>
-          </div>
-          <p class="hint" id="embTotalHint">Embedding cost: ₹0/mo</p>
-        </div>
+<!-- 13 PAYMENT TAX -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">13</span>Payment Gateway & GST</h2><p>Gateway fee, gateway GST and customer-facing output GST are treated separately.</p></div></div>
+<div class="fields">
+<div class="field"><label>Gateway fee %</label><input id="gatewayPct" type="number" value="2" step=".01"></div>
+<div class="field"><label>GST on gateway fee %</label><input id="gatewayGST" type="number" value="18" step=".1"></div>
+<div class="field"><label>Output GST % on listed price</label><input id="outputGST" type="number" value="18" step=".1"></div>
+<div class="field"><label>Prices include GST?</label><select id="pricesIncludeGST"><option value="yes">Yes</option><option value="no">No</option></select></div>
+</div>
+<div class="grid g3" style="margin-top:12px">
+<div class="box"><div class="box-title">Gateway</div><div class="row"><span>Gateway fee</span><strong id="gatewayFeeCost">₹0</strong></div><div class="row"><span>GST on gateway fee</span><strong id="gatewayFeeGSTCost">₹0</strong></div><div class="row"><span>Total gateway cost</span><strong id="gatewayTotal">₹0</strong></div></div>
+<div class="box"><div class="box-title">Output GST</div><div class="row"><span>Gross billed</span><strong id="grossBilled">₹0</strong></div><div class="row"><span>Output GST liability</span><strong id="outputGSTAmount">₹0</strong></div><div class="row"><span>Revenue ex-output GST</span><strong id="revenueExGST">₹0</strong></div></div>
+<div class="box"><div class="box-title">Cash Leakage</div><div class="row"><span>Refunds</span><strong id="refundCost">₹0</strong></div><div class="row"><span>Failed payments</span><strong id="failedCost">₹0</strong></div><div class="row"><span>Net collectible</span><strong id="netCollectible">₹0</strong></div></div>
+</div>
+<div class="small" style="margin-top:9px">GST is a tax liability, not ordinary operating revenue. Actual tax treatment should be verified with the business's accountant/GST setup.</div>
+</section>
 
-        <div class="infra-block">
-          <h3>Vector Database</h3>
-          <div class="field-row">
-            <label for="vdb_type">Type</label>
-            <select id="vdb_type">
-              <option value="pgvector">pgvector (free, existing DB)</option>
-              <option value="qdrant">Qdrant Cloud (paid)</option>
-            </select>
-          </div>
-          <div id="vdbFeeField" style="display:none;">
-            <div class="field-row">
-              <label for="vdb_fee">Cost/mo</label>
-              <div class="amount-field"><span class="rupee">₹</span><input type="number" id="vdb_fee" value="850" min="0" step="50"></div>
-            </div>
-          </div>
-        </div>
+<!-- 14 EMAIL -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">14</span>Email, OTP, Notifications & Support</h2><p>Operational communication costs.</p></div></div>
+<div class="fields">
+<div class="field"><label>Email ₹ / student / month</label><input id="emailPerStudent" type="number" value=".50" step=".01"></div>
+<div class="field"><label>SMS/OTP ₹ / student</label><input id="smsPerStudent" type="number" value=".20" step=".01"></div>
+<div class="field"><label>Support ₹ / tutor</label><input id="supportPerTutor" type="number" value="50"></div>
+<div class="field"><label>Other ops ₹ / tutor</label><input id="opsPerTutor" type="number" value="25"></div>
+</div>
+</section>
 
-      </div>
+<!-- 15 BACKUP SECURITY -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">15</span>Backup, Security & Monitoring</h2><p>Separate base protection from usage allocation.</p></div></div>
+<div class="fields">
+<div class="field"><label>Backup base ₹</label><input id="backupBase2" type="number" value="700"></div>
+<div class="field"><label>Backup / tutor ₹</label><input id="backupPerTutor" type="number" value="25"></div>
+<div class="field"><label>Security base ₹</label><input id="securityBase2" type="number" value="500"></div>
+<div class="field"><label>Monitoring base ₹</label><input id="monitoringBase2" type="number" value="300"></div>
+</div>
+</section>
 
-      <div class="infra-total">
-        <div>
-          <div class="label">Total Internal Infra Cost</div>
-          <div class="per-client" id="infraPerClient">— per active client</div>
-        </div>
-        <div class="value" id="infraTotal">₹0</div>
-      </div>
+<!-- 16-17 CLASSIFICATION -->
+<section class="grid g2">
+<div class="panel">
+<div class="section-head"><div><h2><span class="section-num">16</span>Fixed vs Variable vs Semi-variable</h2><p>Cost behavior classification.</p></div></div>
+<table><thead><tr><th>Category</th><th>Behavior</th><th>Monthly</th></tr></thead><tbody>
+<tr><td>Team</td><td>Fixed</td><td id="clsTeam">₹0</td></tr>
+<tr><td>Base infra</td><td>Fixed</td><td id="clsBase">₹0</td></tr>
+<tr><td>Gateway</td><td>Variable</td><td id="clsGateway">₹0</td></tr>
+<tr><td>AI</td><td>Variable</td><td id="clsAI">₹0</td></tr>
+<tr><td>Video</td><td>Variable</td><td id="clsVideo">₹0</td></tr>
+<tr><td>DB / pgvector usage</td><td>Semi-variable</td><td id="clsDB">₹0</td></tr>
+<tr><td>Support / operations</td><td>Semi-variable</td><td id="clsOps">₹0</td></tr>
+</tbody></table>
+</div>
+<div class="panel">
+<div class="section-head"><div><h2><span class="section-num">17</span>Nested Variable Cost</h2><p>Complete cost stack before contribution.</p></div></div>
+<div class="box">
+<div class="row"><span>Gateway</span><strong id="nGateway">₹0</strong></div>
+<div class="row"><span>AI</span><strong id="nAI">₹0</strong></div>
+<div class="row"><span>Video storage</span><strong id="nStorage">₹0</strong></div>
+<div class="row"><span>Video processing</span><strong id="nProcessing">₹0</strong></div>
+<div class="row"><span>Video delivery</span><strong id="nDelivery">₹0</strong></div>
+<div class="row"><span>Email + SMS</span><strong id="nComms">₹0</strong></div>
+<div class="row"><span>DB + vector usage</span><strong id="nDB">₹0</strong></div>
+<div class="row"><span>Backup usage</span><strong id="nBackup">₹0</strong></div>
+<div class="row"><span>Support + operations</span><strong id="nSupport">₹0</strong></div>
+<div class="row"><span>Refunds + failed payments</span><strong id="nRefunds">₹0</strong></div>
+<div class="row"><span><b>Total variable / semi-variable</b></span><strong class="orange" id="nestedTotal">₹0</strong></div>
+</div>
+</div>
+</section>
 
-      <div class="recs" id="infraRecs">
-        <h4>Suggestions</h4>
-        <div id="infraRecList"></div>
-      </div>
-    </div>
-  </section>
+<!-- 18 PLAN ECONOMICS -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">18</span>Plan-wise Unit Economics</h2><p>Contribution margin after allocated variable cost.</p></div></div>
+<div class="grid g3">
+<div class="plan"><div class="plan-head"><div><b>Starter</b><div class="small">Current price</div></div><div class="plan-price" id="starterPlanPrice">₹0</div></div><ul class="list"><li><span>Allocated variable cost</span><strong id="starterVC">₹0</strong></li><li><span>Contribution</span><strong id="starterCon">₹0</strong></li><li><span>Contribution margin</span><strong id="starterCM">0%</strong></li></ul><div class="bar"><div class="fill" id="starterFill"></div></div></div>
+<div class="plan"><div class="plan-head"><div><b>Growth</b><div class="small">Primary target</div></div><div class="plan-price" id="growthPlanPrice">₹0</div></div><ul class="list"><li><span>Allocated variable cost</span><strong id="growthVC">₹0</strong></li><li><span>Contribution</span><strong id="growthCon">₹0</strong></li><li><span>Contribution margin</span><strong id="growthCM">0%</strong></li></ul><div class="bar"><div class="fill" id="growthFill"></div></div></div>
+<div class="plan"><div class="plan-head"><div><b>Institute</b><div class="small">High-value client</div></div><div class="plan-price" id="institutePlanPrice">₹0</div></div><ul class="list"><li><span>Allocated variable cost</span><strong id="instituteVC">₹0</strong></li><li><span>Contribution</span><strong id="instituteCon">₹0</strong></li><li><span>Contribution margin</span><strong id="instituteCM">0%</strong></li></ul><div class="bar"><div class="fill" id="instituteFill"></div></div></div>
+</div>
+</section>
 
-  <section>
-    <div class="section-head">
-      <div class="section-head-left">
-        <span class="section-num">03</span>
-        <h2 class="section-title">Plans — Price, Cost &amp; Clients</h2>
-      </div>
-    </div>
-    <div class="plans">
+<!-- 19 BREAK EVEN -->
+<section class="grid g2">
+<div class="panel">
+<div class="section-head"><div><h2><span class="section-num">19</span>Break-even Analysis</h2><p>Fixed cost divided by contribution per customer.</p></div></div>
+<div class="grid g3">
+<div class="box"><div class="box-title">Starter-only</div><div class="row"><span>Customers</span><strong id="beStarter">0</strong></div></div>
+<div class="box"><div class="box-title">Growth-only</div><div class="row"><span>Customers</span><strong id="beGrowth">0</strong></div></div>
+<div class="box"><div class="box-title">Institute-only</div><div class="row"><span>Clients</span><strong id="beInstitute">0</strong></div></div>
+</div>
+<div class="formula" id="beFormula"></div>
+</div>
+<div class="panel">
+<div class="section-head"><div><h2>Contribution Economics</h2><p>What remains after variable costs.</p></div></div>
+<div class="box">
+<div class="row"><span>Revenue ex output GST</span><strong id="beRevenueExGST">₹0</strong></div>
+<div class="row"><span>Variable + semi-variable</span><strong id="beVariable">₹0</strong></div>
+<div class="row"><span>Contribution</span><strong class="green" id="beContribution">₹0</strong></div>
+<div class="row"><span>Contribution margin</span><strong id="beCM">0%</strong></div>
+<div class="row"><span>Contribution / active tutor</span><strong id="bePerTutor">₹0</strong></div>
+</div>
+</div>
+</section>
 
-      <div class="plan-card">
-        <p class="plan-name">Starter</p>
-        <p class="plan-tag">1–5 courses, ~200 students</p>
-        <div class="field-row">
-          <label for="s_price">Price/mo</label>
-          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="s_price" value="3000" min="0" step="100"></div>
-        </div>
-        <div class="field-row">
-          <label for="s_cost">Your cost/mo</label>
-          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="s_cost" value="800" min="0" step="50"></div>
-        </div>
-        <div class="field-row">
-          <label for="s_clients">Clients</label>
-          <div class="amount-field clients"><input type="number" id="s_clients" value="8" min="0" step="1"></div>
-        </div>
-        <div class="plan-result">
-          <div class="line"><span>Contribution / client</span><span id="s_contrib">₹0</span></div>
-          <div class="line strong"><span>Tier total</span><span id="s_total">₹0</span></div>
-          <span class="margin-pill" id="s_margin">—</span>
-        </div>
-        <button class="infra-btn" id="s_apply" type="button">↳ Apply infra cost to this tier</button>
-      </div>
+<!-- 20 SCENARIOS -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">20</span>Scenario & Scale Simulator</h2><p>Conservative, base and aggressive assumptions plus 0–100 tutor scale.</p></div></div>
+<div class="grid g3">
+<div class="plan"><b>Conservative · 50%</b><div class="decision" id="scCon">₹0</div><div class="small">Current mix at half scale</div></div>
+<div class="plan"><b>Base · 100%</b><div class="decision green" id="scBase">₹0</div><div class="small">Current assumptions</div></div>
+<div class="plan"><b>Aggressive · 200%</b><div class="decision orange" id="scAgg">₹0</div><div class="small">Current mix at double scale</div></div>
+</div>
+<div class="chart" id="scaleChart" style="margin-top:16px"></div>
+</section>
 
-      <div class="plan-card">
-        <p class="plan-name">Growth</p>
-        <p class="plan-tag">6–20 courses, ~1,000 students</p>
-        <div class="field-row">
-          <label for="g_price">Price/mo</label>
-          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="g_price" value="8500" min="0" step="100"></div>
-        </div>
-        <div class="field-row">
-          <label for="g_cost">Your cost/mo</label>
-          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="g_cost" value="2500" min="0" step="50"></div>
-        </div>
-        <div class="field-row">
-          <label for="g_clients">Clients</label>
-          <div class="amount-field clients"><input type="number" id="g_clients" value="3" min="0" step="1"></div>
-        </div>
-        <div class="plan-result">
-          <div class="line"><span>Contribution / client</span><span id="g_contrib">₹0</span></div>
-          <div class="line strong"><span>Tier total</span><span id="g_total">₹0</span></div>
-          <span class="margin-pill" id="g_margin">—</span>
-        </div>
-        <button class="infra-btn" id="g_apply" type="button">↳ Apply infra cost to this tier</button>
-      </div>
+<!-- 21 BUSINESS HEALTH -->
+<section class="panel">
+<div class="section-head"><div><h2><span class="section-num">21</span>Business Health, Buffer & Decision Layer</h2><p>Final operating signal for the current model.</p></div></div>
+<div class="grid g4">
+<div class="plan"><div class="small">Status</div><div style="margin-top:10px"><span id="healthStatus" class="status warn">CALCULATING</span></div><div class="small" id="healthText" style="margin-top:8px"></div></div>
+<div class="plan"><div class="small">Safe revenue target</div><div class="decision green" id="safeRevenue">₹0</div><div class="small">Running cost × 1.25</div></div>
+<div class="plan"><div class="small">Monthly buffer</div><div class="decision" id="buffer">₹0</div><div class="small">Revenue − running cost</div></div>
+<div class="plan"><div class="small">CAC payback proxy</div><div class="decision purple" id="cacPayback">—</div><div class="small">CAC ÷ monthly contribution</div></div>
+</div>
+<div class="formula">
+GROSS BILLING
+− OUTPUT GST LIABILITY
+− REFUNDS
+− FAILED PAYMENTS
+− PAYMENT GATEWAY
+− AI
+− VIDEO
+− COMMUNICATION
+− DATABASE / VECTOR USAGE
+− BACKUP USAGE
+− SUPPORT / OPERATIONS
+= CONTRIBUTION
 
-      <div class="plan-card">
-        <p class="plan-name">Institute</p>
-        <p class="plan-tag">Unlimited, multi-tutor</p>
-        <div class="field-row">
-          <label for="i_price">Price/mo</label>
-          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="i_price" value="22000" min="0" step="500"></div>
-        </div>
-        <div class="field-row">
-          <label for="i_cost">Your cost/mo</label>
-          <div class="amount-field"><span class="rupee">₹</span><input type="number" id="i_cost" value="6500" min="0" step="100"></div>
-        </div>
-        <div class="field-row">
-          <label for="i_clients">Clients</label>
-          <div class="amount-field clients"><input type="number" id="i_clients" value="1" min="0" step="1"></div>
-        </div>
-        <div class="plan-result">
-          <div class="line"><span>Contribution / client</span><span id="i_contrib">₹0</span></div>
-          <div class="line strong"><span>Tier total</span><span id="i_total">₹0</span></div>
-          <span class="margin-pill" id="i_margin">—</span>
-        </div>
-        <button class="infra-btn" id="i_apply" type="button">↳ Apply infra cost to this tier</button>
-      </div>
+CONTRIBUTION
+− SALARIES
+− BASE INFRASTRUCTURE
+= OPERATING PROFIT
 
-    </div>
-  </section>
+SAFE REVENUE TARGET = TOTAL RUNNING COST × 1.25
+</div>
+</section>
 
-  <section>
-    <div class="section-head">
-      <div class="section-head-left">
-        <span class="section-num">04</span>
-        <h2 class="section-title">The Ledger Balance</h2>
-      </div>
-    </div>
-    <div class="beam-card">
-      <div class="beam-top">
-        <div>
-          <p class="beam-figure-label" id="resultLabel">Net Result / Month</p>
-          <p class="beam-figure profit" id="netFigure">₹0</p>
-        </div>
-        <div class="beam-meta">
-          Fixed cost <strong id="metaFixed">₹0</strong><br>
-          Total contribution <strong id="metaContrib">₹0</strong>
-        </div>
-      </div>
+<!-- ADDITIONAL ECONOMIC INPUTS -->
+<section class="panel">
+<div class="section-head"><div><h2>Additional Business Economics</h2><p>Used for CAC, payback and retention analysis.</p></div><span class="tag">Optional</span></div>
+<div class="fields">
+<div class="field"><label>Sales + marketing spend ₹ / month</label><input id="marketingSpend" type="number" value="5000"></div>
+<div class="field"><label>New paying tutors / month</label><input id="newPayingTutors" type="number" value="2"></div>
+<div class="field"><label>Average acquisition cost override ₹</label><input id="cacOverride" type="number" value="0"></div>
+<div class="field"><label>Target contribution margin %</label><input id="targetCM" type="number" value="70"></div>
+</div>
+</section>
 
-      <div class="scale">
-        <div class="scale-fill" id="scaleFill"></div>
-        <div class="scale-marker" id="scaleMarker"></div>
-      </div>
-      <div class="scale-ticks">
-        <span>₹0</span>
-        <span id="scaleMax">₹0</span>
-      </div>
-
-      <div class="recs">
-        <h4>Recommendations</h4>
-        <div id="recList"></div>
-      </div>
-    </div>
-  </section>
-
-  <footer>Sab calculation is page ke andar hi hoti hai — koi data kahin bheja nahi jaata.</footer>
-
+<div class="footer">Single-file local calculator · No external libraries · Inputs and calculations stay in the browser.</div>
 </div>
 
 <script>
-  function fmtINR(num) {
-    const n = Math.round(num);
-    const sign = n < 0 ? '-' : '';
-    const abs = Math.abs(n).toString();
-    let lastThree = abs.substring(abs.length - 3);
-    let other = abs.substring(0, abs.length - 3);
-    if (other !== '') { lastThree = ',' + lastThree; }
-    const formatted = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
-    return sign + '₹' + formatted;
-  }
+const $=id=>document.getElementById(id);
+const N=id=>Number($(id)?.value)||0;
+const money=v=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(v||0);
+const pct=v=>(Number(v)||0).toFixed(1)+"%";
+const set=(id,v)=>{if($(id))$(id).textContent=v};
 
-  function val(id) {
-    const el = document.getElementById(id);
-    if (!el) return 0;
-    const v = parseFloat(el.value);
-    return isNaN(v) ? 0 : v;
-  }
+function calc(){
+const starter=N("starterTutors"),growth=N("growthTutors"),institute=N("instituteClients");
+const tutors=starter+growth+institute;
+const students=tutors*N("studentsPerTutor");
 
-  function recItem(container, type, html) {
-    const div = document.createElement('div');
-    div.className = 'rec-item';
-    div.innerHTML = '<span class="rec-dot ' + type + '"></span><span>' + html + '</span>';
-    container.appendChild(div);
-  }
+const sPrice=N("starterPrice"),gPrice=N("growthPrice"),iPrice=N("institutePrice");
+const grossBilling=starter*sPrice+growth*gPrice+institute*iPrice;
 
-  // ---- Toggle infra panel ----
-  const showInfraEl = document.getElementById('showInfra');
-  const infraPanel = document.getElementById('infraPanel');
-  const toggleLabel = document.getElementById('toggleLabel');
-  showInfraEl.addEventListener('change', () => {
-    infraPanel.style.display = showInfraEl.checked ? 'block' : 'none';
-    toggleLabel.textContent = showInfraEl.checked ? 'On' : 'Off';
-    recalc();
-  });
+const team=N("dev1")+N("dev2")+N("founderCost")+N("otherTeam");
+const baseInfra=N("server")+N("postgres")+N("redis")+N("domain")+N("monitoring")+N("backupBase")+N("securityBase")+N("software");
+const fixed=team+baseInfra;
 
-  // ---- Server preset ----
-  document.getElementById('srv_preset').addEventListener('change', function () {
-    if (this.value !== 'custom') {
-      document.getElementById('srv_cost').value = this.value;
-      recalc();
-    }
-  });
+const lectures=N("lectures"),size=N("videoSize");
+const totalStorage=tutors*lectures*size;
+const storageCost=totalStorage*N("storageRate");
+const views=students*N("videoViews");
+const bandwidth=views*(lectures*size/Math.max(N("studentsPerTutor"),1))*(N("watchPct")/100);
+const deliveryCost=bandwidth*N("deliveryRate");
+const newContent=tutors*N("newContentGB");
+const processingCost=newContent*N("processingRate");
+const videoTotal=storageCost+deliveryCost+processingCost;
 
-  // ---- LLM plan ----
-  const llmPlanEl = document.getElementById('llm_plan');
-  const llmCustomFields = document.getElementById('llmCustomFields');
-  llmPlanEl.addEventListener('change', function () {
-    llmCustomFields.style.display = this.value === 'custom' ? 'block' : 'none';
-    recalc();
-  });
+const questions=students*N("aiQuestions");
+const llm=questions/1000*N("llmRate");
+const whisper=tutors*N("whisperRate");
+const embeddings=tutors*N("embeddingRate");
+const aiCompute=N("aiCompute")+N("selfHostedAI");
+const aiTotal=llm+whisper+embeddings+aiCompute;
 
-  // ---- Embedding source ----
-  const embSourceEl = document.getElementById('emb_source');
-  const embApiFields = document.getElementById('embApiFields');
-  embSourceEl.addEventListener('change', function () {
-    embApiFields.style.display = this.value === 'api' ? 'block' : 'none';
-    recalc();
-  });
+const gatewayFee=grossBilling*N("gatewayPct")/100;
+const gatewayFeeGST=gatewayFee*N("gatewayGST")/100;
+const gatewayTotal=gatewayFee+gatewayFeeGST;
 
-  // ---- Vector DB type ----
-  const vdbTypeEl = document.getElementById('vdb_type');
-  const vdbFeeField = document.getElementById('vdbFeeField');
-  vdbTypeEl.addEventListener('change', function () {
-    vdbFeeField.style.display = this.value === 'qdrant' ? 'block' : 'none';
-    recalc();
-  });
+let outputGST=0,revenueExGST=grossBilling;
+if($("pricesIncludeGST").value==="yes"){
+ outputGST=grossBilling*N("outputGST")/(100+N("outputGST"));
+ revenueExGST=grossBilling-outputGST;
+}else{
+ outputGST=grossBilling*N("outputGST")/100;
+ revenueExGST=grossBilling;
+}
 
-  // ---- Apply infra cost to tier ----
-  function applyToTier(prefix) {
-    const total = computeInfraTotal();
-    document.getElementById(prefix + '_cost').value = Math.round(total);
-    recalc();
-  }
-  document.getElementById('s_apply').addEventListener('click', () => applyToTier('s'));
-  document.getElementById('g_apply').addEventListener('click', () => applyToTier('g'));
-  document.getElementById('i_apply').addEventListener('click', () => applyToTier('i'));
+const refunds=grossBilling*N("refundRate")/100;
+const failed=grossBilling*N("failedRate")/100;
 
-  function computeInfraTotal() {
-    const srv = val('srv_cost');
-    const stor = val('stor_gb') * val('stor_rate');
+const email=students*N("emailPerStudent");
+const sms=students*N("smsPerStudent");
+const support=tutors*N("supportPerTutor");
+const ops=tutors*N("opsPerTutor");
 
-    let llm;
-    if (llmPlanEl.value === 'custom') {
-      llm = (val('llm_intok') * val('llm_inrate')) + (val('llm_outtok') * val('llm_outrate'));
-    } else {
-      llm = parseFloat(llmPlanEl.value) || 0;
-    }
+const dbBase=N("dbBase");
+const dbUsage=tutors*(N("dbPerTutor")+N("vectorPerTutor"))*(1+N("dbBuffer")/100);
 
-    let emb = 0;
-    if (embSourceEl.value === 'api') {
-      emb = val('emb_tok') * val('emb_rate');
-    }
+const backupUsage=tutors*N("backupPerTutor");
+const nestedVariable=gatewayTotal+aiTotal+videoTotal+email+sms+dbUsage+backupUsage+support+ops+refunds+failed;
 
-    let vdb = 0;
-    if (vdbTypeEl.value === 'qdrant') {
-      vdb = val('vdb_fee');
-    }
+const totalOpex=fixed+nestedVariable;
+const netRevenue=revenueExGST-gatewayTotal-refunds-failed;
+const contribution=revenueExGST-nestedVariable;
+const opProfit=netRevenue-(nestedVariable-gatewayTotal)+0; // contribution already includes gateway; use revenue ex GST - nested variable
+const operatingProfit=contribution-fixed;
+const opMargin=revenueExGST>0?operatingProfit/revenueExGST*100:0;
+const cm=revenueExGST>0?contribution/revenueExGST*100:0;
 
-    document.getElementById('storTotalHint').textContent = 'Storage cost: ' + fmtINR(stor) + '/mo';
-    document.getElementById('llmTotalHint').textContent = 'LLM cost: ' + fmtINR(llm) + '/mo';
-    document.getElementById('embTotalHint').textContent = 'Embedding cost: ' + fmtINR(emb) + '/mo';
+const allocPerTutor=tutors>0?nestedVariable/tutors:0;
+const starterVC=allocPerTutor;
+const growthVC=allocPerTutor;
+const instituteVC=allocPerTutor;
 
-    return srv + stor + llm + emb + vdb;
-  }
+const sCon=sPrice-starterVC,gCon=gPrice-growthVC,iCon=iPrice-instituteVC;
+const sCM=sPrice>0?sCon/sPrice*100:0,gCM=gPrice>0?gCon/gPrice*100:0,iCM=iPrice>0?iCon/iPrice*100:0;
 
-  function recalc() {
-    // ---- Fixed costs ----
-    const dev1 = val('dev1');
-    const dev2 = val('dev2');
-    const baseInfra = val('baseInfra');
-    const totalFixed = dev1 + dev2 + baseInfra;
-    document.getElementById('totalFixed').textContent = fmtINR(totalFixed);
+const beS=sCon>0?Math.ceil(fixed/sCon):0;
+const beG=gCon>0?Math.ceil(fixed/gCon):0;
+const beI=iCon>0?Math.ceil(fixed/iCon):0;
+const beRevenue=cm>0?fixed/(cm/100):0;
 
-    // ---- Infra total ----
-    const infraTotal = computeInfraTotal();
-    document.getElementById('infraTotal').textContent = fmtINR(infraTotal);
+const safe=totalOpex*1.25;
+const buffer=grossBilling-totalOpex;
+const marketing=N("marketingSpend");
+const newPaying=N("newPayingTutors");
+const cac=N("cacOverride")>0?N("cacOverride"):(newPaying>0?marketing/newPaying:0);
+const cacPayback=gCon>0?cac/gCon:0;
 
-    // ---- Tiers ----
-    const tierDefs = [
-      { prefix: 's_' },
-      { prefix: 'g_' },
-      { prefix: 'i_' }
-    ];
+set("grossMRR",money(grossBilling));set("netRevenue",money(netRevenue));set("fixedOpex",money(fixed));set("variableCost",money(nestedVariable));set("totalOpex",money(totalOpex));set("opProfit",money(operatingProfit));set("opMargin",pct(opMargin)+" operating margin");
 
-    let totalContribution = 0;
-    let totalClients = 0;
+set("totalStorage",totalStorage.toFixed(1)+" GB");set("storageCost",money(storageCost));set("monthlyViews",views.toLocaleString("en-IN"));set("bandwidth",bandwidth.toFixed(1)+" GB");set("deliveryCost",money(deliveryCost));set("newContentTotal",newContent.toFixed(1)+" GB");set("processingCost",money(processingCost));
 
-    tierDefs.forEach(t => {
-      const price = val(t.prefix + 'price');
-      const cost = val(t.prefix + 'cost');
-      const clients = val(t.prefix + 'clients');
-      const contribPer = price - cost;
-      const tierTotal = contribPer * clients;
-      totalContribution += tierTotal;
-      totalClients += clients;
+set("totalStudents",students.toLocaleString("en-IN"));set("totalQuestions",questions.toLocaleString("en-IN"));set("llmCost",money(llm));set("whisperCost",money(whisper));set("embeddingCost",money(embeddings));set("aiComputeCost",money(aiCompute));set("aiTotal",money(aiTotal));
 
-      document.getElementById(t.prefix + 'contrib').textContent = fmtINR(contribPer);
-      document.getElementById(t.prefix + 'total').textContent = fmtINR(tierTotal);
+set("gatewayFeeCost",money(gatewayFee));set("gatewayFeeGSTCost",money(gatewayFeeGST));set("gatewayTotal",money(gatewayTotal));set("grossBilled",money(grossBilling));set("outputGSTAmount",money(outputGST));set("revenueExGST",money(revenueExGST));set("refundCost",money(refunds));set("failedCost",money(failed));set("netCollectible",money(netRevenue));
 
-      const marginPct = price > 0 ? (contribPer / price) * 100 : 0;
-      const pill = document.getElementById(t.prefix + 'margin');
-      pill.textContent = 'Margin ' + marginPct.toFixed(0) + '%';
-      pill.className = 'margin-pill ' + (marginPct >= 50 ? 'good' : 'warn');
-    });
+set("clsTeam",money(team));set("clsBase",money(baseInfra));set("clsGateway",money(gatewayTotal));set("clsAI",money(aiTotal));set("clsVideo",money(videoTotal));set("clsDB",money(dbUsage));set("clsOps",money(support+ops));
 
-    document.getElementById('infraPerClient').textContent =
-      totalClients > 0 ? fmtINR(infraTotal / totalClients) + ' per active client' : '— per active client';
+set("nGateway",money(gatewayTotal));set("nAI",money(aiTotal));set("nStorage",money(storageCost));set("nProcessing",money(processingCost));set("nDelivery",money(deliveryCost));set("nComms",money(email+sms));set("nDB",money(dbUsage));set("nBackup",money(backupUsage));set("nSupport",money(support+ops));set("nRefunds",money(refunds+failed));set("nestedTotal",money(nestedVariable));
 
-    // ---- Infra suggestions ----
-    const infraRecList = document.getElementById('infraRecList');
-    infraRecList.innerHTML = '';
-    if (showInfraEl.checked) {
-      const srv = val('srv_cost');
-      const perClientInfra = totalClients > 0 ? infraTotal / totalClients : null;
+set("starterPlanPrice",money(sPrice));set("growthPlanPrice",money(gPrice));set("institutePlanPrice",money(iPrice));
+set("starterVC",money(starterVC));set("growthVC",money(growthVC));set("instituteVC",money(instituteVC));
+set("starterCon",money(sCon));set("growthCon",money(gCon));set("instituteCon",money(iCon));
+set("starterCM",pct(sCM));set("growthCM",pct(gCM));set("instituteCM",pct(iCM));
+$("starterFill").style.width=Math.max(0,Math.min(100,sCM))+"%";$("growthFill").style.width=Math.max(0,Math.min(100,gCM))+"%";$("instituteFill").style.width=Math.max(0,Math.min(100,iCM))+"%";
 
-      if (llmPlanEl.value === 'custom') {
-        const payPerUse = (val('llm_intok') * val('llm_inrate')) + (val('llm_outtok') * val('llm_outrate'));
-        if (payPerUse > 8500) {
-          recItem(infraRecList, 'warn', '<strong>Ollama Max (₹8,500)</strong> pay-per-token se sasta padega — abhi aap ~' + fmtINR(payPerUse) + '/mo pay-per-use mein de rahe ho.');
-        } else if (payPerUse < 1700 && payPerUse > 0) {
-          recItem(infraRecList, 'good', 'Usage kam hai — <strong>Ollama Free/Pro</strong> pay-per-token se sasta pad sakta hai.');
-        }
-      }
+set("beStarter",beS);set("beGrowth",beG);set("beInstitute",beI);
+set("beFormula",`Break-even revenue ≈ ${money(beRevenue)}\nGrowth-only break-even = ${beG} clients\nFormula: Fixed Opex ÷ Contribution / Client`);
+set("beRevenueExGST",money(revenueExGST));set("beVariable",money(nestedVariable));set("beContribution",money(contribution));set("beCM",pct(cm));set("bePerTutor",money(tutors>0?contribution/tutors:0));
 
-      if (vdbTypeEl.value === 'qdrant' && totalClients < 8) {
-        recItem(infraRecList, 'warn', 'Sirf ' + totalClients + ' clients hain — <strong>pgvector (free)</strong> abhi ke liye kaafi hoga, Qdrant Cloud ka paisa bacha sakte ho.');
-      }
+function scenario(mult){
+ const r=grossBilling*mult;
+ const v=nestedVariable*mult;
+ return r-v-fixed;
+}
+set("scCon",money(scenario(.5)));set("scBase",money(scenario(1)));set("scAgg",money(scenario(2)));
 
-      if (srv >= 28000 && totalClients < 15) {
-        recItem(infraRecList, 'warn', 'GPU server (₹28,000+) abhi ke client-count ke hisaab se overkill lag raha hai — chhota instance try karo jab tak load na badhe.');
-      }
+const chart=$("scaleChart");chart.innerHTML="";
+const scale=[0,5,10,20,30,50,75,100];
+const revPerTutor=tutors>0?grossBilling/tutors:gPrice;
+const varPerTutor=tutors>0?nestedVariable/tutors:starterVC;
+const profits=scale.map(t=>t*revPerTutor-t*varPerTutor-fixed);
+const max=Math.max(...profits.map(x=>Math.abs(x)),1);
+scale.forEach((t,i)=>{
+ const col=document.createElement("div");col.className="barcol";
+ const val=document.createElement("div");val.className="barvalue";val.textContent=money(profits[i]);
+ const b=document.createElement("div");b.className="barshape"+(profits[i]<0?" loss":"");b.style.height=Math.max(3,Math.abs(profits[i])/max*84)+"%";
+ const lab=document.createElement("div");lab.className="barlabel";lab.textContent=t+" tutors";
+ col.append(val,b,lab);chart.appendChild(col);
+});
 
-      if (perClientInfra !== null) {
-        const growthCost = val('g_cost');
-        if (perClientInfra > growthCost * 1.15) {
-          recItem(infraRecList, 'warn', 'Infra cost per client (' + fmtINR(perClientInfra) + ') Growth tier ke manually-entered cost (' + fmtINR(growthCost) + ') se zyada hai — tier ka "Your cost" field update karo ya "Apply" button use karo.');
-        } else {
-          recItem(infraRecList, 'good', 'Infra cost per client (' + fmtINR(perClientInfra) + ') Growth tier ke cost-field se roughly match kar raha hai.');
-        }
-      }
+set("safeRevenue",money(safe));set("buffer",money(buffer));set("cacPayback",cac>0?cacPayback.toFixed(1)+" mo":"—");
 
-      if (infraRecList.children.length === 0) {
-        recItem(infraRecList, 'info', 'Infra setup theek dikh raha hai — koi turant change ki zaroorat nahi.');
-      }
-    }
+const hs=$("healthStatus"),ht=$("healthText");
+if(grossBilling<=0){hs.textContent="NO REVENUE";hs.className="status bad";ht.textContent="Add paying customers to evaluate unit economics."}
+else if(operatingProfit<0){hs.textContent="BELOW BREAK-EVEN";hs.className="status bad";ht.textContent=money(Math.abs(operatingProfit))+" monthly operating loss."}
+else if(cm<N("targetCM")){hs.textContent="MARGIN BELOW TARGET";hs.className="status warn";ht.textContent="Contribution margin is below the configured target of "+N("targetCM")+"%."}
+else{hs.textContent="HEALTHY";hs.className="status good";ht.textContent="Current assumptions meet the configured contribution-margin target and generate positive operating profit."}
+}
 
-    // ---- Balance ----
-    const net = totalContribution - totalFixed;
-    const netFigureEl = document.getElementById('netFigure');
-    const resultLabelEl = document.getElementById('resultLabel');
-    netFigureEl.textContent = fmtINR(net);
-    netFigureEl.classList.toggle('profit', net >= 0);
-    netFigureEl.classList.toggle('loss', net < 0);
-    resultLabelEl.textContent = net >= 0 ? 'Net Profit / Month' : 'Net Shortfall / Month';
-
-    document.getElementById('metaFixed').textContent = fmtINR(totalFixed);
-    document.getElementById('metaContrib').textContent = fmtINR(totalContribution);
-
-    const maxVal = Math.max(totalFixed, totalContribution, 1) * 1.15;
-    const fillPct = Math.min((totalContribution / maxVal) * 100, 100);
-    const markerPct = Math.min((totalFixed / maxVal) * 100, 100);
-
-    const fillEl = document.getElementById('scaleFill');
-    fillEl.style.width = fillPct + '%';
-    fillEl.classList.toggle('short', totalContribution < totalFixed);
-
-    document.getElementById('scaleMarker').style.left = markerPct + '%';
-    document.getElementById('scaleMax').textContent = fmtINR(maxVal);
-
-    // ---- Recommendations (overall) ----
-    const recList = document.getElementById('recList');
-    recList.innerHTML = '';
-
-    if (totalContribution >= totalFixed) {
-      const surplus = totalContribution - totalFixed;
-      const bufferPct = totalFixed > 0 ? (surplus / totalFixed) * 100 : 0;
-      recItem(recList, 'good', 'Fixed cost cover ho raha hai — <strong>' + fmtINR(surplus) + '</strong> extra bach raha hai har mahine.');
-      if (bufferPct < 20) {
-        recItem(recList, 'warn', 'Buffer sirf ' + bufferPct.toFixed(0) + '% hai — ek client chhod (churn) de to profit khatam ho sakta hai. 20-30% buffer target karo.');
-      } else {
-        recItem(recList, 'good', 'Buffer ' + bufferPct.toFixed(0) + '% hai — 1-2 client chhod bhi den to bhi aap safe ho.');
-      }
-    } else {
-      const gap = totalFixed - totalContribution;
-      const gPrice = val('g_price'), gCost = val('g_cost');
-      const gContrib = gPrice - gCost;
-      const moreGrowth = gContrib > 0 ? Math.ceil(gap / gContrib) : null;
-      let msg = 'Abhi <strong>' + fmtINR(gap) + '</strong> ka shortfall hai — fixed cost total contribution se zyada hai.';
-      if (moreGrowth) {
-        msg += ' Cover karne ke liye lagbhag <strong>' + moreGrowth + ' aur Growth-tier client</strong> chahiye.';
-      }
-      recItem(recList, 'warn', msg);
-    }
-
-    // Which tier has best contribution-per-client — suggest focus
-    const tierContribs = [
-      { name: 'Starter', c: val('s_price') - val('s_cost') },
-      { name: 'Growth', c: val('g_price') - val('g_cost') },
-      { name: 'Institute', c: val('i_price') - val('i_cost') }
-    ];
-    tierContribs.sort((a, b) => b.c - a.c);
-    recItem(recList, 'info', '<strong>' + tierContribs[0].name + '</strong> tier har client se sabse zyada kamata hai (' + fmtINR(tierContribs[0].c) + '/client) — naye clients laate waqt isi tier pe focus karo.');
-
-    // Low-margin tier warning
-    tierContribs.forEach(t => {
-      const priceMap = { Starter: 's_price', Growth: 'g_price', Institute: 'i_price' };
-      const price = val(priceMap[t.name]);
-      const marginPct = price > 0 ? (t.c / price) * 100 : 0;
-      if (marginPct < 40 && price > 0) {
-        recItem(recList, 'warn', t.name + ' tier ka margin sirf ' + marginPct.toFixed(0) + '% hai — price badhane ya cost kam karne pe sochho.');
-      }
-    });
-  }
-
-  document.querySelectorAll('input[type="number"], select').forEach(el => {
-    el.addEventListener('input', recalc);
-    el.addEventListener('change', recalc);
-  });
-
-  recalc();
+document.querySelectorAll("input,select").forEach(x=>x.addEventListener("input",calc));
+function resetModel(){location.reload()}
+calc();
 </script>
-
 </body>
 </html>
